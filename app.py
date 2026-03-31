@@ -6,7 +6,7 @@ st.set_page_config(page_title="La Máquina de Adivinanzas", page_icon="🧙‍�
 
 # CONECTAMOS CON TU API KEY (Usaremos un secreto por seguridad)
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel('models/gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 st.title("🧙‍♂️ El Sabio de los Inventos")
 st.write("Escribe el nombre de un objeto y para qué sirve. ¡Haré una adivinanza mágica!")
