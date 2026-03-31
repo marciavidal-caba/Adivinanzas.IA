@@ -1,58 +1,60 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Configuración de la Máquina
+# 1. CONFIGURACIÓN DE LA MÁQUINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# 2. Conexión con la Llave (Secrets)
+# 2. CONEXIÓN CON LA LLAVE (SECRETS)
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("⚠️ Configura la API KEY en los Secrets.")
+    st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
 
-# 3. FUNCIÓN DE EXPERTO: Buscar modelo automático
+# 3. FUNCIÓN PARA BUSCAR MODELO AUTOMÁTICO
 @st.cache_resource
 def configurar_modelo():
     try:
-        # Buscamos qué modelos tienes permitidos
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # Retorna el primer modelo válido que encuentre (ej: gemini-1.5-flash)
                 return genai.GenerativeModel(m.name)
-    except Exception as e:
-        st.error(f"Error al buscar modelos: {e}")
-    return None
+    except:
+        return None
 
 model = configurar_modelo()
 
-# 4. Interfaz Visual Limpia
+# 4. INTERFAZ EN MAYÚSCULAS
 st.title("🤖✨ TECNO ADIVINANZAS MACHINE")
-st.write("Escribe el objeto y su función. ¡Crearé una adivinanza!")
+st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ UNA ADIVINANZA!")
 
-# Cuadros de texto sin sugerencias
-objeto = st.text_input("1. ¿Qué producto es?", placeholder="")
-funcion = st.text_input("2. ¿Para qué sirve?", placeholder="")
+# CUADROS DE TEXTO SIN SUGERENCIAS Y EN MAYÚSCULAS
+objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", placeholder="")
+funcion = st.text_input("2. ¿PARA QUÉ SERVE?", placeholder="")
 
-# Botón de encendido
+# BOTÓN DE ENCENDIDO
 if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
     if objeto and funcion:
         if model:
-            with st.spinner('🤖 Procesando datos...'):
+            with st.spinner('🤖 PROCESANDO DATOS...'):
                 try:
+                    # INSTRUCCIÓN CRÍTICA: "RESPONDE SIEMPRE EN MAYÚSCULAS"
                     consigna = (
-                        f"Crea una adivinanza de 4 versos para niños de 6 años "
-                        f"sobre un/a {objeto} que sirve para {funcion}. "
-                        f"No digas el nombre del objeto. Termina con: ¿Qué soy?"
+                        f"ERES UN MAESTRO DE PRIMER GRADO. CREA UNA ADIVINANZA DE 4 VERSOS "
+                        f"PARA NIÑOS DE 6 AÑOS SOBRE UN/A {objeto} QUE SIRVE PARA {funcion}. "
+                        f"NO DIGAS EL NOMBRE DEL OBJETO. TERMINA CON: ¿QUÉ SOY? "
+                        f"IMPORTANTE: ESCRIBE TODA TU RESPUESTA ÚNICAMENTE EN LETRAS MAYÚSCULAS."
                     )
                     resultado = model.generate_content(consigna)
                     
                     st.markdown("---")
-                    st.subheader("📝 Tu Adivinanza:")
-                    st.write(resultado.text)
-                    st.success("¡Operación exitosa! 🚀")
+                    st.subheader("📝 TU ADIVINANZA:")
+                    # FORZAMOS EL TEXTO A MAYÚSCULAS POR SI LA IA SE OLVIDA
+                    texto_final = resultado.text.upper()
+                    st.write(texto_final)
+                    
+                    st.success("¡OPERACIÓN EXITOSA! 🚀")
                 except Exception as e:
-                    st.error(f"La máquina se trabó: {e}")
+                    st.error(f"LA MÁQUINA SE TRABÓ: {e}")
         else:
-            st.error("No se encontró un modelo compatible. Revisa tu API KEY.")
+            st.error("NO SE ENCONTRÓ UN MODELO COMPATIBLE.")
     else:
-        st.warning("Completa los dos cuadritos, por favor.")
+        st.warning("COMPLETA LOS DOS CUADRITOS, POR FAVOR.")
