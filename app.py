@@ -4,7 +4,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PESTAÑA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- ESTILO PARA QUE EL TÍTULO QUEDE EN UNA SOLA LÍNEA ---
+# --- ESTILO PARA EL TÍTULO EN UNA LÍNEA ---
 st.markdown("""
     <style>
     .titulo-machine {
@@ -34,26 +34,28 @@ def configurar_modelo():
 
 model = configurar_modelo()
 
-# 4. INTERFAZ CON TÍTULO AJUSTADO
-# USAMOS HTML PARA QUE EL ESTILO QUE CREAMOS ARRIBA SE APLIQUE
+# 4. INTERFAZ VISUAL
 st.markdown('<p class="titulo-machine">🤖✨ TECNO ADIVINANZAS MACHINE</p>', unsafe_allow_html=True)
-st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ UNA ADIVINANZA!")
+st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
 # CUADROS DE TEXTO
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", placeholder="")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", placeholder="")
 
-# BOTÓN DE ENCENDIDO
-if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
+# --- CAMBIO DE NOMBRE EN EL BOTÓN ---
+if st.button("✨ CREA TU ADIVINANZA TECNOLÓGICA"):
     if objeto and funcion:
         if model:
             with st.spinner('🤖 PROCESANDO DATOS...'):
                 try:
+                    # INSTRUCCIÓN ESTRUCTURADA: FUNCIÓN -> FORMA -> BREVEDAD
                     consigna = (
-                        f"CREA UNA ADIVINANZA DE 4 VERSOS PARA NIÑOS DE 6 AÑOS "
-                        f"SOBRE UN/A {objeto} QUE SIRVE PARA {funcion}. "
-                        f"REGLAS ESTRICTAS: NO SALUDES, NO DES EXPLICACIONES. "
-                        f"ESCRIBE SOLO LOS 4 VERSOS Y LA PREGUNTA FINAL EN MAYÚSCULAS."
+                        f"ERES UN MAESTRO DE PRIMER GRADO. CREA UNA ADIVINANZA CORTA SOBRE UN/A {objeto}. "
+                        f"SIGUE ESTA ESTRUCTURA DE 4 VERSOS BREVES: "
+                        f"VERSOS 1 Y 2: DESCRIBE QUE SIRVE PARA {funcion}. "
+                        f"VERSOS 3 Y 4: DESCRIBE SU FORMA, COLOR O MATERIAL. "
+                        f"REGLAS: NO SALUDES, NO DES PISTAS EXTRAS, SOLO LOS 4 VERSOS Y '¿QUÉ SOY?'. "
+                        f"TODO EN MAYÚSCULAS."
                     )
                     
                     resultado = model.generate_content(consigna)
