@@ -14,7 +14,7 @@ else:
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 4. Interfaz Limpia
-st.title("🤖✨ El Robot de los Inventos")
+st.title("🤖✨ TECNO ADIVINANZAS")
 st.write("Escribe el nombre de un objeto y para qué sirve. ¡Haré magia digital!")
 
 # Cuadros de texto sin sugerencias (placeholder vacío)
