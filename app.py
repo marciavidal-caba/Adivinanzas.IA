@@ -11,8 +11,7 @@ else:
     st.error("Falta la API KEY en los Secrets de Streamlit.")
 
 # Usamos el modelo más estable
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
-
+model = genai.GenerativeModel('gemini-pro')
 st.title("🧙‍♂️ El Sabio de los Inventos")
 st.write("Escribe el nombre de un objeto y para qué sirve.")
 
