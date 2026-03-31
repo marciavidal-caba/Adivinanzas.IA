@@ -1,50 +1,49 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Configuración de la pestaña y el icono
+# 1. Título e Icono en la pestaña
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# 2. Conexión con la API KEY (Configurada en Secrets de Streamlit)
+# 2. Conexión con la llave (Asegúrate que en Secrets diga GOOGLE_API_KEY)
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("⚠️ Configura la API KEY en los Secrets de Streamlit.")
+    st.error("⚠️ No hay llave configurada.")
 
-# 3. Configuración del Modelo (Usamos el nombre más compatible del 2026)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# 3. EL CAMBIO CLAVE: Usamos 'gemini-pro' (Es el más estable del mundo)
+model = genai.GenerativeModel('gemini-pro')
 
-# 4. Interfaz Visual: Título y Estrellas
+# 4. Interfaz Visual
 st.title("🤖✨ TECNO ADIVINANZAS MACHINE")
-st.write("Escribe el objeto y para qué sirve. ¡La máquina creará una adivinanza!")
+st.write("¡Hola! Soy tu máquina de inventos. Escribe y crearé magia.")
 
-# Cuadros de texto limpios para niños (sin sugerencias)
-objeto = st.text_input("1. ¿Qué producto es?", placeholder="")
+# Cuadros de texto limpios
+objeto = st.text_input("1. ¿Qué producto tecnológico es?", placeholder="")
 funcion = st.text_input("2. ¿Para qué sirve?", placeholder="")
 
-# Botón de acción
+# Botón de encendido
 if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
     if objeto and funcion:
-        try:
-            # Instrucción interna para la IA
-            consigna = (
-                f"Eres un experto en educación infantil. Crea una adivinanza "
-                f"para niños de 6 años sobre un/a {objeto} que sirve para {funcion}. "
-                f"Usa 4 versos con rimas muy simples. No digas el nombre del objeto. "
-                f"Termina con la pregunta: ¿Qué soy?"
-            )
-            
-            # Generar la respuesta
-            resultado = model.generate_content(consigna)
-            
-            st.markdown("---")
-            st.subheader("📝 Tu Adivinanza:")
-            st.write(resultado.text)
-            
-            st.divider()
-            st.info("💡 ¡Sácale una foto y súbela al muro de Padlet!")
-            
-        except Exception as e:
-            # Si hay error de modelo, intentamos una ruta alternativa
-            st.error(f"La máquina está procesando datos. Intenta tocar el botón otra vez.")
+        # Usamos un mensaje de espera animado
+        with st.spinner('🤖 Procesando datos...'):
+            try:
+                # Instrucción para la IA
+                consigna = (
+                    f"Eres un robot que crea adivinanzas para niños de 6 años. "
+                    f"Crea una adivinanza de 4 versos sobre un/a {objeto} que sirve para {funcion}. "
+                    f"No digas el nombre del objeto. Termina con: ¿Qué soy?"
+                )
+                
+                # Generar respuesta
+                resultado = model.generate_content(consigna)
+                
+                st.markdown("---")
+                st.subheader("📝 Tu Adivinanza:")
+                st.write(resultado.text)
+                st.success("¡Logrado! ✨")
+                
+            except Exception as e:
+                # Si esto falla, te dirá el error exacto para que yo lo arregle
+                st.error(f"Error técnico: {e}")
     else:
-        st.warning("La máquina necesita que completes los dos espacios.")
+        st.warning("Escribe en los dos cuadritos, por favor.")
