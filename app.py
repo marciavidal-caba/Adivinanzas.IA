@@ -1,8 +1,20 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. CONFIGURACIÓN DE LA MÁQUINA
+# 1. CONFIGURACIÓN DE LA PESTAÑA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
+
+# --- ESTILO PARA QUE EL TÍTULO QUEDE EN UNA SOLA LÍNEA ---
+st.markdown("""
+    <style>
+    .titulo-machine {
+        font-size: 32px !important;
+        font-weight: bold;
+        text-align: center;
+        white-space: nowrap;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # 2. CONEXIÓN CON LA LLAVE (SECRETS)
 if "GOOGLE_API_KEY" in st.secrets:
@@ -22,11 +34,12 @@ def configurar_modelo():
 
 model = configurar_modelo()
 
-# 4. INTERFAZ EN MAYÚSCULAS
-st.title("🤖✨ TECNO ADIVINANZAS MACHINE")
+# 4. INTERFAZ CON TÍTULO AJUSTADO
+# USAMOS HTML PARA QUE EL ESTILO QUE CREAMOS ARRIBA SE APLIQUE
+st.markdown('<p class="titulo-machine">🤖✨ TECNO ADIVINANZAS MACHINE</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ UNA ADIVINANZA!")
 
-# CUADROS DE TEXTO SIN SUGERENCIAS
+# CUADROS DE TEXTO
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", placeholder="")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", placeholder="")
 
@@ -36,26 +49,18 @@ if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
         if model:
             with st.spinner('🤖 PROCESANDO DATOS...'):
                 try:
-                    # INSTRUCCIÓN ULTRA-ESTRICTA: SIN SALUDOS NI EXPLICACIONES
                     consigna = (
                         f"CREA UNA ADIVINANZA DE 4 VERSOS PARA NIÑOS DE 6 AÑOS "
                         f"SOBRE UN/A {objeto} QUE SIRVE PARA {funcion}. "
-                        f"REGLAS ESTRICTAS: "
-                        f"1. NO SALUDES. "
-                        f"2. NO DIGAS 'HOLA'. "
-                        f"3. NO DES EXPLICACIONES. "
-                        f"4. ESCRIBE SOLO LOS 4 VERSOS Y LA PREGUNTA FINAL. "
-                        f"5. TODO EN MAYÚSCULAS."
+                        f"REGLAS ESTRICTAS: NO SALUDES, NO DES EXPLICACIONES. "
+                        f"ESCRIBE SOLO LOS 4 VERSOS Y LA PREGUNTA FINAL EN MAYÚSCULAS."
                     )
                     
                     resultado = model.generate_content(consigna)
                     
                     st.markdown("---")
                     st.subheader("📝 TU ADIVINANZA:")
-                    
-                    # DOBLE FILTRO DE MAYÚSCULAS
-                    texto_final = resultado.text.upper()
-                    st.write(texto_final)
+                    st.write(resultado.text.upper())
                     
                 except Exception as e:
                     st.error(f"LA MÁQUINA SE TRABÓ: {e}")
