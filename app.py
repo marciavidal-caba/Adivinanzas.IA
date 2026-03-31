@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. Configuración visual: Robot y Estrellas
-st.set_page_config(page_title="TECNO ADIVINANZAS MAKER", page_icon="🤖")
+st.set_page_config(page_title="TECNO-ADIVINANZAS MAKER", page_icon="🤖")
 
 # 2. Conexión con la API KEY (Desde los Secrets de Streamlit)
 if "GOOGLE_API_KEY" in st.secrets:
