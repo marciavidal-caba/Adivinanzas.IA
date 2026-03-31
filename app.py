@@ -26,9 +26,9 @@ model = configurar_modelo()
 st.title("🤖✨ TECNO ADIVINANZAS MACHINE")
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ UNA ADIVINANZA!")
 
-# CUADROS DE TEXTO SIN SUGERENCIAS Y EN MAYÚSCULAS
+# CUADROS DE TEXTO SIN SUGERENCIAS
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", placeholder="")
-funcion = st.text_input("2. ¿PARA QUÉ SERVE?", placeholder="")
+funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", placeholder="")
 
 # BOTÓN DE ENCENDIDO
 if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
@@ -36,22 +36,27 @@ if st.button("✨ ¡ENCENDER LA MÁQUINA!"):
         if model:
             with st.spinner('🤖 PROCESANDO DATOS...'):
                 try:
-                    # INSTRUCCIÓN CRÍTICA: "RESPONDE SIEMPRE EN MAYÚSCULAS"
+                    # INSTRUCCIÓN ULTRA-ESTRICTA: SIN SALUDOS NI EXPLICACIONES
                     consigna = (
-                        f"ERES UN MAESTRO DE PRIMER GRADO. CREA UNA ADIVINANZA DE 4 VERSOS "
-                        f"PARA NIÑOS DE 6 AÑOS SOBRE UN/A {objeto} QUE SIRVE PARA {funcion}. "
-                        f"NO DIGAS EL NOMBRE DEL OBJETO. TERMINA CON: ¿QUÉ SOY? "
-                        f"IMPORTANTE: ESCRIBE TODA TU RESPUESTA ÚNICAMENTE EN LETRAS MAYÚSCULAS."
+                        f"CREA UNA ADIVINANZA DE 4 VERSOS PARA NIÑOS DE 6 AÑOS "
+                        f"SOBRE UN/A {objeto} QUE SIRVE PARA {funcion}. "
+                        f"REGLAS ESTRICTAS: "
+                        f"1. NO SALUDES. "
+                        f"2. NO DIGAS 'HOLA'. "
+                        f"3. NO DES EXPLICACIONES. "
+                        f"4. ESCRIBE SOLO LOS 4 VERSOS Y LA PREGUNTA FINAL. "
+                        f"5. TODO EN MAYÚSCULAS."
                     )
+                    
                     resultado = model.generate_content(consigna)
                     
                     st.markdown("---")
                     st.subheader("📝 TU ADIVINANZA:")
-                    # FORZAMOS EL TEXTO A MAYÚSCULAS POR SI LA IA SE OLVIDA
+                    
+                    # DOBLE FILTRO DE MAYÚSCULAS
                     texto_final = resultado.text.upper()
                     st.write(texto_final)
                     
-                    st.success("¡OPERACIÓN EXITOSA! 🚀")
                 except Exception as e:
                     st.error(f"LA MÁQUINA SE TRABÓ: {e}")
         else:
