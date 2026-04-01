@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from google.oauth2.service_account import Credentials
 import gspread
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
@@ -47,7 +47,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. FUNCIÓN DE GUARDADO
+# 2. FUNCIÓN DE GUARDADO CON AJUSTE DE HORA ARGENTINA
 def guardar_en_excel(nombre, obj, func, adv):
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -56,8 +56,12 @@ def guardar_en_excel(nombre, obj, func, adv):
         client = gspread.authorize(creds)
         ID_PLANILLA = "1Sppk9CJ3s-jrUug9zVwDl5BWjVHS5kPBZEE2JmhcLfw" 
         sheet = client.open_by_key(ID_PLANILLA).sheet1
-        ahora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        sheet.append_row([ahora, nombre.upper(), obj.upper(), func.upper(), adv.upper()])
+        
+        # Ajuste: Restamos 3 horas para que coincida con Argentina
+        ahora_argentina = datetime.now() - timedelta(hours=3)
+        fecha_hora_texto = ahora_argentina.strftime("%d/%m/%Y %H:%M:%S")
+        
+        sheet.append_row([fecha_hora_texto, nombre.upper(), obj.upper(), func.upper(), adv.upper()])
     except Exception as e:
         st.error(f"Error de Excel: {e}")
 
