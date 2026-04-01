@@ -4,7 +4,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PESTAÑA Y PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- SÚPER ESTILO CSS PERSONALIZADO (NEGRO + NARANJA #ffc300) ---
+# --- ESTILO CSS PERSONALIZADO (NEGRO + NARANJA #ffc300) ---
 st.markdown(f"""
     <style>
     /* 1. Fuerza color NEGRO en toda la app y textos base */
@@ -13,7 +13,7 @@ st.markdown(f"""
         font-family: 'Source Sans Pro', sans-serif;
     }}
     
-    /* 2. Estilo para el Título (Grande, Negro, Centrado) */
+    /* 2. Estilo para el Título */
     .titulo-machine {{
         font-size: 28px !important;
         font-weight: bold;
@@ -23,51 +23,49 @@ st.markdown(f"""
         white-space: nowrap;
     }}
 
-    /* 3. Estilo para el Subtítulo de la adivinanza (Negro y Grande) */
+    /* 3. Estilo para el Subtítulo de la adivinanza */
     .adivinanza-subtitulo {{
         color: #000000 !important;
-        font-size: 20px;
+        font-size: 22px;
         font-weight: bold;
         margin-top: 15px;
     }}
 
-    /* 4. Estilo MINIMALISTA INFANTIL para el recuadro de la adivinanza (st.code) */
+    /* 4. RECUADRO DE ADIVINANZA (Texto más grande y negrita) */
     div[data-testid="stCodeBlock"] {{
-        border: 4px solid #ffc300; /* Borde Naranja Amarillento */
-        border-radius: 20px;      /* Bordes muy redondeados */
-        background-color: #f9f9f9; /* Fondo gris muy clarito */
-        padding: 15px;
+        border: 4px solid #ffc300;
+        border-radius: 20px;
+        background-color: #f9f9f9;
+        padding: 10px;
     }}
-    /* Asegura que el texto DENTRO de la adivinanza sea Negro y Grande */
     div[data-testid="stCodeBlock"] code {{
         color: #000000 !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
+        font-size: 22px !important; /* Letra más grande */
+        font-weight: 800 !important; /* Más negrita */
     }}
 
-    /* 5. Estilo para el BOTÓN PRINCIPAL (Fondo Naranja, Texto Negro, Redondeado) */
-    div.stButton > button:first-child {{
-        background-color: #ffc300 !important; /* Fondo Naranja */
-        color: #000000 !important;            /* Texto Negro */
-        border-radius: 25px !important;      /* Muy redondeado */
-        border: 2px solid #ffc300 !important;
+    /* 5. BOTONES MÁS PEQUEÑOS Y REDONDEADOS */
+    div.stButton > button {{
+        border-radius: 20px !important;
         font-weight: bold !important;
-        padding: 10px 20px !important;
+        padding: 5px 15px !important; /* Padding reducido para menor tamaño */
+        font-size: 14px !important;
         transition: all 0.3s ease;
     }}
-    /* Efecto al pasar el mouse por el botón */
-    div.stButton > button:first-child:hover {{
-        background-color: #e6b000 !important; /* Naranja un poco más oscuro */
-        border-color: #e6b000 !important;
-        transform: scale(1.03); /* Se agranda un poquito */
+
+    /* Botón principal */
+    div.stButton > button:first-child {{
+        background-color: #ffc300 !important;
+        color: #000000 !important;
+        border: 2px solid #ffc300 !important;
     }}
 
-    /* 6. Estilo para el BOTÓN BORRAR (Gris, Texto Negro, Redondeado) */
-    div.stButton > button[data-testid="baseButton-secondary"] {{
-        border-radius: 25px !important;
-        color: #000000 !important;
-        border: 2px solid #cccccc !important;
-        background-color: #ffffff !important;
+    /* Estilo para mensajes de validación del robot */
+    .mensaje-robot {{
+        font-size: 18px;
+        font-weight: bold;
+        color: #000000;
+        padding: 10px;
     }}
 
     </style>
@@ -97,58 +95,53 @@ def borrar_todo():
     st.session_state["funcion"] = ""
 
 # 5. INTERFAZ DE USUARIO (UI)
-st.markdown('<p class="titulo-machine">🤖TECNO ADIVINANZAS MACHINE✨</p>', unsafe_allow_html=True)
+st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
-# CUADROS DE TEXTO SIN HISTORIAL
+# CUADROS DE TEXTO
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
 
-# FILA DE BOTONES
-col1, col2 = st.columns(2)
+# FILA DE BOTONES AJUSTADA
+col1, col2 = st.columns([2, 1]) # Proporción para que los botones se vean mejor
 
 with col1:
-    btn_crear = st.button("✏️CREA TU ADIVINANZA")
+    btn_crear = st.button("✏️ CREA TU ADIVINANZA")
 
 with col2:
-    st.button("🗑️BORRAR TODO", on_click=borrar_todo)
+    st.button("🗑️ BORRAR", on_click=borrar_todo)
 
-# 6. LÓGICA DE GENERACIÓN CON VALIDACIÓN Y NUEVO DISEÑO
+# 6. LÓGICA DE GENERACIÓN
 if btn_crear:
     if objeto and funcion:
         if model:
-            with st.spinner('🤖 EL ROBOT ESTÁ ANALIZANDO...'):
+            with st.spinner('🤖 ANALIZANDO...'):
                 try:
                     consigna = (
-                        f"ACTÚA COMO UN MAESTRO DE PRIMER GRADO (NIÑOS DE 6 AÑOS). "
+                        f"ACTÚA COMO UN MAESTRO DE PRIMER GRADO. "
                         f"EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
-                        f"REGLA 1: SI LA FUNCIÓN NO TIENE NINGÚN SENTIDO CON EL OBJETO, RESPONDE EXACTAMENTE: "
+                        f"REGLA 1: SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE: "
                         f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
-                        f"REGLA 2: SI LO QUE ESCRIBIÓ NO SE ENTIENDE, RESPONDE: "
-                        f"'¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
-                        f"REGLA 3: SI TODO ESTÁ CORRECTO, CREA UNA ADIVINANZA CORTA DE 4 VERSOS: "
-                        f"V1 Y V2 SOBRE LA FUNCIÓN, V3 Y V4 SOBRE LA FORMA O COLOR. "
-                        f"TODO EL TEXTO EN MAYÚSCULAS. NO SALUDES."
+                        f"REGLA 2: SI NO SE ENTIENDE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
+                        f"REGLA 3: SI TODO ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
+                        f"TODO EN MAYÚSCULAS. RESPONDE SOLO EL TEXTO SOLICITADO."
                     )
                     
                     resultado = model.generate_content(consigna)
                     respuesta = resultado.text.upper()
-                     font-size: 28px !important;
                     
-                    st.markdown("---")
+                    # Eliminamos la línea divisoria (---)
                     
-                    # SI ES UNA ADIVINANZA (TIENE PREGUNTA)
                     if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
                         st.markdown('<p class="adivinanza-subtitulo">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
-                        # MOSTRAR EN EL RECUADRO CON BORDES REDONDEADOS Y BOTÓN DE COPIADO
                         st.code(respuesta, language=None)
                     else:
-                        # SI ES UN MENSAJE DE VALIDACIÓN (TEXTO NEGRO)
-                        st.markdown(f"{respuesta}")
+                        # Mensaje del robot más amigable y legible
+                        st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"HUBO UN ERROR TÉCNICO: {e}")
+                    st.error(f"ERROR: {e}")
         else:
-            st.error("NO SE ENCONTRÓ MODELO DE IA.")
+            st.error("NO SE ENCONTRÓ MODELO.")
     else:
-        st.warning("POR FAVOR, COMPLETA LOS DOS CUADRITOS.")
+        st.warning("COMPLETA LOS DOS CUADROS.")
