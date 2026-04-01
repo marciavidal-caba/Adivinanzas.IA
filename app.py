@@ -7,7 +7,7 @@ from datetime import datetime
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- DISEÑO ESTÉTICO (NEGRO Y NARANJA) ---
+# --- DISEÑO ESTÉTICO ---
 st.markdown(f"""
     <style>
     .block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; }}
@@ -47,27 +47,33 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. FUNCIÓN DE GUARDADO EN EXCEL
+# 2. FUNCIÓN DE GUARDADO
 def guardar_en_excel(nombre, obj, func, adv):
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets"]
         creds_info = st.secrets["gcp_service_account"]
         creds = Credentials.from_service_account_info(creds_info, scopes=scope)
         client = gspread.authorize(creds)
-        
         ID_PLANILLA = "1Sppk9CJ3s-jrUug9zVwDl5BWjVHS5kPBZEE2JmhcLfw" 
         sheet = client.open_by_key(ID_PLANILLA).sheet1
-        
         ahora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         sheet.append_row([ahora, nombre.upper(), obj.upper(), func.upper(), adv.upper()])
     except Exception as e:
         st.error(f"Error de Excel: {e}")
 
-# 3. CONFIGURACIÓN IA (USANDO MODELO GEMINI-PRO PARA MÁXIMA COMPATIBILIDAD)
+# 3. CONFIGURACIÓN IA CON AUTO-DETECCIÓN
+model = None
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    # Cambiamos a 'gemini-pro' que es el más estable
-    model = genai.GenerativeModel('gemini-pro')
+    try:
+        # Buscamos qué modelos están disponibles en tu cuenta
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                if 'flash' in m.name or 'pro' in m.name:
+                    model = genai.GenerativeModel(m.name)
+                    break
+    except Exception as e:
+        st.error(f"Error al listar modelos: {e}")
 else:
     st.error("FALTA API KEY EN SECRETS")
 
@@ -76,7 +82,7 @@ def borrar_todo():
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 4. INTERFAZ (CON TUS ETIQUETAS PEDAGÓGICAS)
+# 4. INTERFAZ
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("ESCRIBE TU NOMBRE", key="nombre", autocomplete="off")
@@ -89,26 +95,29 @@ with col1:
 with col2:
     st.button("🗑️ BORRAR TODO", on_click=borrar_todo)
 
-# 5. LÓGICA DE CONTROL
+# 5. LÓGICA
 if btn_crear:
     if nombre and objeto and funcion:
-        with st.spinner('🤖 CREANDO TU ADIVINANZA...'):
-            try:
-                consigna = (
-                    f"ERES UNA MÁQUINA DE ADIVINANZAS. ALUMNO: {nombre}. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
-                    f"REGLA 1: SI LA FUNCIÓN ES NATURAL (CRECER, NADAR, VOLAR), RESPONDE: ¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
-                    f"REGLA 2: SI ES CORRECTO, ESCRIBE SÓLO UNA ADIVINANZA DE 4 VERSOS EN MAYÚSCULAS CON TILDES. TERMINA CON ¿QUÉ SOY? "
-                    f"NO SALUDES NI EXPLIQUES NADA."
-                )
-                res = model.generate_content(consigna)
-                respuesta_ia = res.text.upper().strip()
-                
-                if "¿QUÉ SOY?" in respuesta_ia:
-                    st.code(respuesta_ia, language=None)
-                    guardar_en_excel(nombre, objeto, funcion, respuesta_ia)
-                else:
-                    st.markdown(f'<p style="font-size:20px; font-weight:bold;">🤖 {respuesta_ia}</p>', unsafe_allow_html=True)
-            except Exception as e:
-                st.error(f"Error técnico: {e}")
+        if model:
+            with st.spinner('🤖 CREANDO TU ADIVINANZA..'):
+                try:
+                    consigna = (
+                        f"ERES UNA MÁQUINA DE ADIVINANZAS. ALUMNO: {nombre}. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
+                        f"SI LA FUNCIÓN ES NATURAL (CRECER, NADAR, VOLAR), RESPONDE: ¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
+                        f"SI ES CORRECTO, ESCRIBE SOLO UNA ADIVINANZA DE 4 VERSOS EN MAYÚSCULAS CON TILDES. TERMINA CON ¿QUÉ SOY? "
+                        f"NO SALUDES NI EXPLIQUES NADA."
+                    )
+                    res = model.generate_content(consigna)
+                    respuesta_ia = res.text.upper().strip()
+                    
+                    if "¿QUÉ SOY?" in respuesta_ia:
+                        st.code(respuesta_ia, language=None)
+                        guardar_en_excel(nombre, objeto, funcion, respuesta_ia)
+                    else:
+                        st.markdown(f'<p style="font-size:20px; font-weight:bold;">🤖 {respuesta_ia}</p>', unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Error técnico al generar: {e}")
+        else:
+            st.error("No se encontró ningún modelo compatible. Revisa tu API KEY.")
     else:
         st.warning("POR FAVOR, COMPLETA TODOS LOS CAMPOS.")
