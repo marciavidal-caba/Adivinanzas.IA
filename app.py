@@ -4,7 +4,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PESTAÑA Y PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- ESTILO CSS PERSONALIZADO (NEGRO + NARANJA #ffc300) ---
+# --- ESTILO CSS PERSONALIZADO ---
 st.markdown(f"""
     <style>
     .stApp, div[data-testid="stMarkdownContainer"] p, .stWidgetLabel, .stTextInput input, p {{
@@ -17,7 +17,6 @@ st.markdown(f"""
         text-align: center;
         color: #000000 !important;
         margin-bottom: 25px;
-        white-space: nowrap;
     }}
     .adivinanza-subtitulo {{
         color: #000000 !important;
@@ -41,7 +40,6 @@ st.markdown(f"""
         font-weight: bold !important;
         padding: 5px 15px !important; 
         font-size: 14px !important;
-        transition: all 0.3s ease;
     }}
     div.stButton > button:first-child {{
         background-color: #ffc300 !important;
@@ -68,27 +66,24 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
 
-# 3. DETECTOR AUTOMÁTICO DE MODELO (SOLUCIÓN AL ERROR 404)
+# 3. DETECTOR AUTOMÁTICO DE MODELO
 @st.cache_resource
 def configurar_modelo():
     try:
-        # Buscamos en la lista de Google qué modelo está activo para tu cuenta
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
                 return genai.GenerativeModel(m.name)
         return None
-    except Exception as e:
-        st.error(f"Error de conexión: {e}")
+    except:
         return None
 
 model = configurar_modelo()
 
-# 4. FUNCIÓN PARA BORRAR TODO
 def borrar_todo():
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 5. INTERFAZ DE USUARIO
+# 4. INTERFAZ
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
@@ -101,34 +96,12 @@ with col1:
 with col2:
     st.button("🗑️ BORRAR", on_click=borrar_todo)
 
-# 6. LÓGICA DE GENERACIÓN
+# 5. LÓGICA CON FILTRO DE "PRODUCTO TECNOLÓGICO"
 if btn_crear:
     if objeto and funcion:
         if model:
             with st.spinner('🤖 ANALIZANDO...'):
                 try:
                     consigna = (
-                        f"ERES UN MAESTRO DE PRIMER GRADO. UN NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
-                        f"SI NO TIENE SENTIDO, RESPONDE: '¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
-                        f"SI ES ILEGIBLE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
-                        f"SI ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
-                        f"TODO EN MAYÚSCULAS Y TERMINA CON '¿QUÉ SOY?'."
-                    )
-                    
-                    resultado = model.generate_content(consigna)
-                    respuesta = resultado.text.upper().strip()
-                    
-                    if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
-                        st.markdown('<p class="adivinanza-subtitulo">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
-                        st.code(respuesta, language=None)
-                    else:
-                        st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
-                except Exception as e:
-                    if "429" in str(e):
-                        st.error("🤖 CUPO DIARIO AGOTADO. MAÑANA TENDREMOS MÁS.")
-                    else:
-                        st.error(f"HUBO UN PROBLEMA: {e}")
-        else:
-            st.error("NO SE ENCONTRÓ UN MOTOR DISPONIBLE.")
-    else:
-        st.warning("COMPLETA LOS DOS CUADROS.")
+                        f"ACTÚA COMO UN MAESTRO DE TECNOLOGÍA. EL ALUMNO ESCRIBIÓ: '{objeto}' QUE SIRVE PARA '{funcion}'. "
+                        f"DEFINICIÓN: UN PRODUCTO TECNOLÓGICO ES TODO LO CREADO O TRANSFORMADO POR PERSONAS (OBJETOS, SERVICIOS O
