@@ -61,10 +61,11 @@ def guardar_en_excel(nombre, obj, func, adv):
     except Exception as e:
         st.error(f"Error de Excel: {e}")
 
-# 3. CONFIGURACIÓN IA
+# 3. CONFIGURACIÓN IA (AQUÍ ESTÁ EL ARREGLO)
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Cambiamos a la ruta completa del modelo
+    model = genai.GenerativeModel('models/gemini-1.5-flash')
 else:
     st.error("FALTA API KEY EN SECRETS")
 
@@ -73,7 +74,7 @@ def borrar_todo():
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 4. INTERFAZ (CON TUS NUEVAS ETIQUETAS)
+# 4. INTERFAZ 
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("ESCRIBE TU NOMBRE", key="nombre", autocomplete="off")
@@ -92,10 +93,10 @@ if btn_crear:
         with st.spinner('🤖 PROCESANDO...'):
             try:
                 consigna = (
-                    f"ERES UNA MÁQUINA DE ADIVINANZAS. ALUMNO: {nombre}. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
-                    f"SI LA FUNCIÓN ES NATURAL (CRECER, NADAR, VOLAR), RESPONDE: ¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
-                    f"SI ES CORRECTO, ESCRIBE SOLO UNA ADIVINANZA DE 4 VERSOS EN MAYÚSCULAS CON TILDES. TERMINA CON ¿QUÉ SOY? "
-                    f"NO SALUDES, NO EXPLIQUES."
+                    f"ERES UNA MÁQUINA DE ADIVINANZAS PARA NIÑOS DE 6 AÑOS. ALUMNO: {nombre}. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
+                    f"REGLA 1: SI LA FUNCIÓN ES NATURAL O NO CREADA POR EL HOMBRE (EJ: CRECER, VOLAR CON ALAS, LLOVER, NADAR), RESPONDE SOLO: ¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
+                    f"REGLA 2: SI ES CORRECTO, ESCRIBE SÓLO UNA ADIVINANZA DE 4 VERSOS EN MAYÚSCULAS CON TILDES. TERMINA CON ¿QUÉ SOY? "
+                    f"NO SALUDES NI EXPLIQUES NADA."
                 )
                 res = model.generate_content(consigna)
                 respuesta_ia = res.text.upper().strip()
@@ -106,7 +107,6 @@ if btn_crear:
                 else:
                     st.markdown(f'<p style="font-size:20px; font-weight:bold;">🤖 {respuesta_ia}</p>', unsafe_allow_html=True)
             except Exception as e:
-                # Aquí mostramos el error real por si acaso
                 st.error(f"Error técnico: {e}")
     else:
         st.warning("POR FAVOR, COMPLETA TODOS LOS CAMPOS.")
