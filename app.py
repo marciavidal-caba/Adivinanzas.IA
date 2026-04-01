@@ -1,30 +1,35 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. CONFIGURACIÓN DE LA PESTAÑA Y PÁGINA
+# 1. CONFIGURACIÓN DE LA PESTAÑA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- ESTILO CSS PARA EL TÍTULO EN UNA SOLA LÍNEA ---
+# --- ESTILO CSS ---
 st.markdown("""
     <style>
     .titulo-machine {
-        font-size: 30px !important;
+        font-size: 26px !important;
         font-weight: bold;
         text-align: center;
         white-space: nowrap;
-        color: #1E88E5;
+        color: #000000;
         margin-bottom: 20px;
+    }
+    .adivinanza-texto {
+        color: #000000;
+        font-size: 20px;
+        font-weight: bold;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CONEXIÓN CON LA LLAVE (SECRETS)
+# 2. CONEXIÓN CON LA LLAVE
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS DE STREAMLIT.")
+    st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
 
-# 3. FUNCIÓN TÉCNICA PARA BUSCAR EL MODELO DISPONIBLE
+# 3. FUNCIÓN PARA BUSCAR MODELO
 @st.cache_resource
 def configurar_modelo():
     try:
@@ -36,45 +41,62 @@ def configurar_modelo():
 
 model = configurar_modelo()
 
+# --- FUNCIÓN PARA BORRAR TODO ---
+def borrar_todo():
+    st.session_state["objeto"] = ""
+    st.session_state["funcion"] = ""
+
 # 4. INTERFAZ DE USUARIO (UI)
 st.markdown('<p class="titulo-machine">🤖✨ TECNO ADIVINANZAS MACHINE</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
-# CUADROS DE TEXTO CON AUTOCOMPLETE DESACTIVADO (SIN HISTORIAL)
-objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", placeholder="", autocomplete="off")
-funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", placeholder="", autocomplete="off")
+# CUADROS DE TEXTO CON "KEY" PARA PODER BORRARLOS
+objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
+funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
 
-# 5. LÓGICA DE GENERACIÓN
-if st.button("✨ CREA TU ADIVINANZA TECNOLÓGICA"):
+# FILA DE BOTONES
+col1, col2 = st.columns(2)
+
+with col1:
+    btn_crear = st.button("✨ CREA TU ADIVINANZA")
+
+with col2:
+    # BOTÓN PARA BORRAR
+    st.button("🗑️ BORRAR TODO", on_click=borrar_todo)
+
+# 5. LÓGICA DE GENERACIÓN CON VALIDACIÓN
+if btn_crear:
     if objeto and funcion:
         if model:
-            with st.spinner('🤖 EL ROBOT ESTÁ PENSANDO...'):
+            with st.spinner('🤖 EL ROBOT ESTÁ ANALIZANDO...'):
                 try:
-                    # PROMPT ESTRUCTURADO: FUNCIÓN (V1-2) -> FORMA (V3-4)
+                    # PROMPT CON LÓGICA DE VALIDACIÓN
                     consigna = (
-                        f"ERES UN DOCENTE DE PRIMARIA. CREA UNA ADIVINANZA MUY CORTA SOBRE UN/A {objeto}. "
-                        f"SIGUE ESTRICTAMENTE ESTA ESTRUCTURA DE 4 VERSOS: "
-                        f"LOS PRIMEROS 2 VERSOS DEBEN EXPLICAR QUE SIRVE PARA {funcion}. "
-                        f"LOS ÚLTIMOS 2 VERSOS DEBEN DESCRIBIR SU FORMA, COLOR O MATERIAL. "
-                        f"REGLAS: NO SALUDES, NO DIGAS HOLA, SOLO ESCRIBE LOS 4 VERSOS Y '¿QUÉ SOY?'. "
-                        f"TODO EL TEXTO DEBE ESTAR EN MAYÚSCULAS."
+                        f"ACTÚA COMO UN MAESTRO QUE AYUDA A NIÑOS DE 6 AÑOS. "
+                        f"EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
+                        f"REGLA 1: SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE EXACTAMENTE: "
+                        f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
+                        f"REGLA 2: SI LO QUE ESCRIBIÓ NO SE ENTIENDE O SON LETRAS AL AZAR, RESPONDE: "
+                        f"'¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
+                        f"REGLA 3: SI TODO TIENE SENTIDO, CREA UNA ADIVINANZA DE 4 VERSOS: "
+                        f"V1 Y V2 SOBRE LA FUNCIÓN, V3 Y V4 SOBRE LA FORMA O COLOR. "
+                        f"TODO EN MAYÚSCULAS. SIN SALUDOS."
                     )
                     
                     resultado = model.generate_content(consigna)
+                    respuesta = resultado.text.upper()
                     
-                    # PROCESAMIENTO DEL RESULTADO
                     st.markdown("---")
-                    st.subheader("📝 TU ADIVINANZA:")
                     
-                    # DOBLE FILTRO DE MAYÚSCULAS PARA SEGURIDAD
-                    texto_final = resultado.text.upper()
-                    st.write(texto_final)
-                    
-                    st.success("¡LISTO! YA PODÉS SACAR LA FOTO PARA EL PADLET. 📸")
+                    # SI ES UNA ADIVINANZA (TIENE PREGUNTA), USAMOS EL CUADRO DE COPIADO
+                    if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
+                        st.markdown('<p class="adivinanza-texto">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
+                        st.code(respuesta, language=None)
+                    else:
+                        # SI ES UN MENSAJE DE ERROR DE LA IA, LO MOSTRAMOS SIMPLE
+                        st.warning(respuesta)
                     
                 except Exception as e:
-                    st.error(f"HUBO UN ERROR TÉCNICO: {e}")
-        else:
-            st.error("NO SE ENCONTRÓ UN MODELO DE IA COMPATIBLE.")
+                    st.error(f"HUBO UN ERROR: {e}")
     else:
-        st.warning("POR FAVOR, COMPLETA LOS DOS CUADRITOS PARA CONTINUAR.")
+        st.warning("POR FAVOR, COMPLETA LOS DOS CUADRITOS.")
