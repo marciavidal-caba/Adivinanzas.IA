@@ -75,7 +75,7 @@ if btn_crear:
                         f"ACTÚA COMO UN MAESTRO QUE AYUDA A NIÑOS DE 6 AÑOS. "
                         f"EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
                         f"REGLA 1: SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE EXACTAMENTE: "
-                        f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
+                        f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA {objeto}?' "
                         f"REGLA 2: SI LO QUE ESCRIBIÓ NO SE ENTIENDE O SON LETRAS AL AZAR, RESPONDE: "
                         f"'¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
                         f"REGLA 3: SI TODO TIENE SENTIDO, CREA UNA ADIVINANZA DE 4 VERSOS: "
