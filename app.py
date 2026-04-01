@@ -106,7 +106,7 @@ if btn_crear:
                         f"OBJETO: {objeto}. FUNCIÓN: {funcion}. "
                         f"REGLA DE ORO: NO SALUDES, NO EXPLIQUES NADA, NO DES COMENTARIOS. "
                         f"REGLA DE PRODUCTO: SI '{objeto}' NO ES UN PRODUCTO TECNOLÓGICO (ES ALGO NATURAL), "
-                        f"RESPONDE SOLO: ¿ESTÁS SEGURO QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
+                        f"RESPONDE SOLO: ¿ESTÁS SEGURO DE QUÉ ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
                         f"REGLA DE FORMATO: 4 VERSOS CORTOS. V1 Y V2 FUNCIÓN. V3 Y V4 FORMA O PROCESO. "
                         f"AL FINAL ESCRIBE '¿QUÉ SOY?'. "
                         f"TODO EN MAYÚSCULAS."
