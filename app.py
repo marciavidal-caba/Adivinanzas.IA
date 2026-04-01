@@ -97,7 +97,7 @@ def borrar_todo():
     st.session_state["funcion"] = ""
 
 # 5. INTERFAZ DE USUARIO (UI)
-st.markdown('<p class="titulo-machine">🤖✨ TECNO ADIVINANZAS MACHINE</p>', unsafe_allow_html=True)
+st.markdown('<p class="titulo-machine">🤖TECNO ADIVINANZAS MACHINE✨</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
 # CUADROS DE TEXTO SIN HISTORIAL
