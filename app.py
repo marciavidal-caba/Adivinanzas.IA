@@ -144,4 +144,12 @@ if btn_crear:
                         st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
                     
                 except Exception as e:
-                    # Si el error es por cu
+                    # Si el error es por cuota, damos un mensaje más amable
+                    if "429" in str(e):
+                        st.error("🤖 EL ROBOT ESTÁ CANSADO. POR FAVOR, ESPERA UN MINUTO Y REINTENTA.")
+                    else:
+                        st.error(f"ERROR: {e}")
+        else:
+            st.error("NO SE ENCONTRÓ EL MOTOR DE IA.")
+    else:
+        st.warning("COMPLETA LOS DOS CUADROS.")
