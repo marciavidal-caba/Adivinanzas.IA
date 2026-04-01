@@ -1,10 +1,13 @@
 import streamlit as st
 import google.generativeai as genai
+from google.oauth2.service_account import Credentials
+import gspread
+from datetime import datetime
 
 # 1. CONFIGURACIÓN DE LA PESTAÑA Y PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- ESTILO CSS (NEGRO, FUENTE GRANDE, SIN LÍNEAS) ---
+# --- ESTILO CSS PERSONALIZADO (NEGRO + NARANJA #ffc300) ---
 st.markdown(f"""
     <style>
     .stApp, div[data-testid="stMarkdownContainer"] p, .stWidgetLabel, .stTextInput input, p {{
@@ -33,14 +36,13 @@ st.markdown(f"""
     div[data-testid="stCodeBlock"] code {{
         color: #000000 !important;
         font-size: 24px !important; 
-        font-weight: 800 !important; 
+        font-weight: 800 !important;
         white-space: pre-wrap !important;
     }}
     div.stButton > button {{
         border-radius: 20px !important;
         font-weight: bold !important;
         padding: 5px 15px !important; 
-        font-size: 14px !important;
     }}
     div.stButton > button:first-child {{
         background-color: #ffc300 !important;
@@ -52,22 +54,32 @@ st.markdown(f"""
         color: #000000 !important;
         border: 2px solid #cccccc !important;
     }}
-    .mensaje-robot {{
-        font-size: 20px;
-        font-weight: bold;
-        color: #000000;
-        padding: 10px;
-    }}
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CONEXIÓN API
+# 2. CONEXIÓN CON GOOGLE SHEETS
+def guardar_en_excel(nombre, obj, func, adv):
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds_dict = st.secrets["gcp_service_account"]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+        client = gspread.authorize(creds)
+        
+        # RECUERDA CAMBIAR ESTE ID POR EL DE TU PLANILLA
+        sheet = client.open_by_key("TU_ID_DE_GOOGLE_SHEET_AQUI").sheet1
+        
+        fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+        # Ahora agregamos el Nombre en la segunda columna
+        sheet.append_row([fecha, nombre.upper(), obj.upper(), func.upper(), adv.upper()])
+    except Exception as e:
+        print(f"Error guardando en Excel: {e}")
+
+# 3. CONEXIÓN API GEMINI
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
+    st.error("⚠️ FALTA API KEY.")
 
-# 3. MOTOR IA
 @st.cache_resource
 def configurar_modelo():
     try:
@@ -80,12 +92,17 @@ def configurar_modelo():
 model = configurar_modelo()
 
 def borrar_todo():
+    st.session_state["nombre"] = ""
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 4. INTERFAZ
+# 4. INTERFAZ DE USUARIO
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
-st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
+
+# NUEVO CAMPO: NOMBRE DEL ALUMNO
+nombre = st.text_input("¿CUÁL ES TU NOMBRE?", key="nombre", autocomplete="off")
+
+st.write("---") # Una línea divisoria sutil
 
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
@@ -96,33 +113,33 @@ with col1:
 with col2:
     st.button("🗑️ BORRAR TODO", on_click=borrar_todo)
 
-# 5. LÓGICA DE GENERACIÓN (SENCILLEZ + FILTRO DE FUNCIÓN)
+# 5. LÓGICA DE GENERACIÓN Y GUARDADO
 if btn_crear:
-    if objeto and funcion:
+    if nombre and objeto and funcion:
         if model:
             with st.spinner('🤖 ANALIZANDO...'):
                 try:
                     consigna = (
-                        f"ERES UN MAESTRO DE TECNOLOGÍA PARA NIÑOS DE 6 AÑOS. "
-                        f"EL NIÑO PUSO EL OBJETO: '{objeto}' CON LA FUNCIÓN: '{funcion}'. "
-                        f"REGLA DE PRODUCTO: SI LA FUNCIÓN ES NATURAL (COMO NADAR, CRECER EN EL BOSQUE, BRILLAR EL SOL) "
-                        f"Y NO IMPLICA TRABAJO HUMANO, RESPONDE SOLO: ¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
-                        f"REGLA DE ESTILO: CREA UNA ADIVINANZA MUY SENCILLA Y CORTA (MÁXIMO 4 VERSOS BREVES). "
-                        f"REGLA DE CONTENIDO: SI ES UN ALIMENTO, MENCIONA QUE SE CULTIVA, SE CRÍA O SE COMPRA. "
-                        f"PROHIBIDO SALUDAR O EXPLICAR. SOLO LA ADIVINANZA EN MAYÚSCULAS CON TILDES. "
-                        f"TERMINA CON: ¿QUÉ SOY?"
+                        f"ACTÚA COMO UN MAESTRO DE TECNOLOGÍA. EL ALUMNO {nombre} ESCRIBIÓ: '{objeto}' Y '{funcion}'. "
+                        f"REGLA 1: SI LA FUNCIÓN ES NATURAL (COMO NADAR, CRECER SOLO, O ALGO QUE NO REQUIERE TRABAJO HUMANO), RESPONDE: "
+                        f"¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
+                        f"REGLA 2: SI ES UN PRODUCTO DEL CAMPO O ALIMENTO PROCESADO, ACÉPTALO. "
+                        f"REGLA 3: CREA UNA ADIVINANZA CORTA DE 4 VERSOS EN MAYÚSCULAS CON TILDES. "
+                        f"REGLA 4: NO SALUDES. TERMINA CON: ¿QUÉ SOY?"
                     )
                     
                     resultado = model.generate_content(consigna)
                     respuesta = resultado.text.upper().strip()
                     
-                    if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
+                    if "¿QUÉ SOY?" in respuesta:
                         st.markdown('<p class="adivinanza-subtitulo">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
                         st.code(respuesta, language=None)
+                        # GUARDAR EN EXCEL
+                        guardar_en_excel(nombre, objeto, funcion, respuesta)
                     else:
-                        st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
-                        
+                        st.markdown(f'<p style="font-size:20px; font-weight:bold; color:black;">🤖 {respuesta}</p>', unsafe_allow_html=True)
                 except Exception as e:
                     st.error("INTENTA DE NUEVO EN UN MOMENTO.")
         else: st.error("MOTOR NO ENCONTRADO.")
-    else: st.warning("COMPLETA LOS DOS CUADRITOS, POR FAVOR.")
+    else:
+        st.warning("POR FAVOR, COMPLETA TU NOMBRE Y LOS DOS CUADRITOS.")
