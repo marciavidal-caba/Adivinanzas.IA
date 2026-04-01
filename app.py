@@ -124,7 +124,7 @@ with col2:
 if btn_crear:
     if objeto and funcion:
         if model:
-            with st.spinner('🤖 ANALIZANDO...'):
+            with st.spinner('🤖 CREANDO TU ADIVINANZA...'):
                 try:
                     # PROMPT REFORZADO PARA RECONOCER ALIMENTOS PROCESADOS COMO TECNOLOGÍA
                     consigna = (
