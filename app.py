@@ -40,24 +40,31 @@ st.markdown(f"""
     }}
     div[data-testid="stCodeBlock"] code {{
         color: #000000 !important;
-        font-size: 22px !important; /* Letra más grande */
-        font-weight: 800 !important; /* Más negrita */
+        font-size: 22px !important; 
+        font-weight: 800 !important; 
     }}
 
-    /* 5. BOTONES MÁS PEQUEÑOS Y REDONDEADOS */
+    /* 5. BOTONES PEQUEÑOS Y REDONDEADOS */
     div.stButton > button {{
         border-radius: 20px !important;
         font-weight: bold !important;
-        padding: 5px 15px !important; /* Padding reducido para menor tamaño */
+        padding: 5px 15px !important; 
         font-size: 14px !important;
         transition: all 0.3s ease;
     }}
 
-    /* Botón principal */
+    /* Botón principal (Naranja) */
     div.stButton > button:first-child {{
         background-color: #ffc300 !important;
         color: #000000 !important;
         border: 2px solid #ffc300 !important;
+    }}
+
+    /* Botón borrar (Blanco/Gris) */
+    div.stButton > button[data-testid="baseButton-secondary"] {{
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #cccccc !important;
     }}
 
     /* Estilo para mensajes de validación del robot */
@@ -77,14 +84,14 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
 
-# 3. FUNCIÓN PARA BUSCAR EL MODELO
+# 3. FUNCIÓN PARA BUSCAR EL MODELO (AJUSTADO A 1.5-FLASH PARA MÁS CUOTA)
 @st.cache_resource
 def configurar_modelo():
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(m.name)
-    except:
+        # Usamos 1.5-flash que es más estable en límites gratuitos escolares
+        return genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        st.error(f"Error al cargar el motor: {e}")
         return None
 
 model = configurar_modelo()
@@ -102,8 +109,8 @@ st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!"
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
 
-# FILA DE BOTONES AJUSTADA
-col1, col2 = st.columns([2, 1]) # Proporción para que los botones se vean mejor
+# FILA DE BOTONES
+col1, col2 = st.columns([2, 1])
 
 with col1:
     btn_crear = st.button("✏️ CREA TU ADIVINANZA")
@@ -118,30 +125,23 @@ if btn_crear:
             with st.spinner('🤖 ANALIZANDO...'):
                 try:
                     consigna = (
-                        f"ACTÚA COMO UN MAESTRO DE PRIMER GRADO. "
-                        f"EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
-                        f"REGLA 1: SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE: "
+                        f"ACTÚA COMO UN MAESTRO DE PRIMARIA. EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
+                        f"SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE EXACTAMENTE: "
                         f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
-                        f"REGLA 2: SI NO SE ENTIENDE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
-                        f"REGLA 3: SI TODO ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
-                        f"TODO EN MAYÚSCULAS. RESPONDE SOLO EL TEXTO SOLICITADO."
+                        f"SI NO SE ENTIENDE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
+                        f"SI TODO ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
+                        f"TODO EN MAYÚSCULAS Y TERMINA CON '¿QUÉ SOY?'. RESPONDE SOLO EL TEXTO SOLICITADO."
                     )
                     
                     resultado = model.generate_content(consigna)
-                    respuesta = resultado.text.upper()
+                    respuesta = resultado.text.upper().strip()
                     
-                    # Eliminamos la línea divisoria (---)
-                    
+                    # Verificamos si es adivinanza o mensaje de error
                     if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
                         st.markdown('<p class="adivinanza-subtitulo">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
                         st.code(respuesta, language=None)
                     else:
-                        # Mensaje del robot más amigable y legible
                         st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"ERROR: {e}")
-        else:
-            st.error("NO SE ENCONTRÓ MODELO.")
-    else:
-        st.warning("COMPLETA LOS DOS CUADROS.")
+                    # Si el error es por cu
