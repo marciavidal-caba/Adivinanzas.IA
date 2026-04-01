@@ -7,13 +7,10 @@ st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 # --- ESTILO CSS PERSONALIZADO (NEGRO + NARANJA #ffc300) ---
 st.markdown(f"""
     <style>
-    /* 1. Fuerza color NEGRO en toda la app y textos base */
     .stApp, div[data-testid="stMarkdownContainer"] p, .stWidgetLabel, .stTextInput input, p {{
         color: #000000 !important;
         font-family: 'Source Sans Pro', sans-serif;
     }}
-    
-    /* 2. Estilo para el Título */
     .titulo-machine {{
         font-size: 28px !important;
         font-weight: bold;
@@ -22,16 +19,12 @@ st.markdown(f"""
         margin-bottom: 25px;
         white-space: nowrap;
     }}
-
-    /* 3. Estilo para el Subtítulo de la adivinanza */
     .adivinanza-subtitulo {{
         color: #000000 !important;
         font-size: 22px;
         font-weight: bold;
         margin-top: 15px;
     }}
-
-    /* 4. RECUADRO DE ADIVINANZA (Texto más grande y negrita) */
     div[data-testid="stCodeBlock"] {{
         border: 4px solid #ffc300;
         border-radius: 20px;
@@ -43,8 +36,6 @@ st.markdown(f"""
         font-size: 22px !important; 
         font-weight: 800 !important; 
     }}
-
-    /* 5. BOTONES PEQUEÑOS Y REDONDEADOS */
     div.stButton > button {{
         border-radius: 20px !important;
         font-weight: bold !important;
@@ -52,29 +43,22 @@ st.markdown(f"""
         font-size: 14px !important;
         transition: all 0.3s ease;
     }}
-
-    /* Botón principal (Naranja) */
     div.stButton > button:first-child {{
         background-color: #ffc300 !important;
         color: #000000 !important;
         border: 2px solid #ffc300 !important;
     }}
-
-    /* Botón borrar (Blanco/Gris) */
     div.stButton > button[data-testid="baseButton-secondary"] {{
         background-color: #ffffff !important;
         color: #000000 !important;
         border: 2px solid #cccccc !important;
     }}
-
-    /* Estilo para mensajes de validación del robot */
     .mensaje-robot {{
         font-size: 18px;
         font-weight: bold;
         color: #000000;
         padding: 10px;
     }}
-
     </style>
     """, unsafe_allow_html=True)
 
@@ -84,14 +68,17 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ CONFIGURA LA API KEY EN LOS SECRETS.")
 
-# 3. FUNCIÓN PARA BUSCAR EL MODELO (AJUSTADO A 1.5-FLASH PARA MÁS CUOTA)
+# 3. DETECTOR AUTOMÁTICO DE MODELO (SOLUCIÓN AL ERROR 404)
 @st.cache_resource
 def configurar_modelo():
     try:
-        # Usamos 1.5-flash que es más estable en límites gratuitos escolares
-        return genai.GenerativeModel('gemini-1.5-flash')
+        # Buscamos en la lista de Google qué modelo está activo para tu cuenta
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                return genai.GenerativeModel(m.name)
+        return None
     except Exception as e:
-        st.error(f"Error al cargar el motor: {e}")
+        st.error(f"Error de conexión: {e}")
         return None
 
 model = configurar_modelo()
@@ -101,20 +88,16 @@ def borrar_todo():
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 5. INTERFAZ DE USUARIO (UI)
+# 5. INTERFAZ DE USUARIO
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 st.write("ESCRIBE EL OBJETO Y SU FUNCIÓN. ¡LA MÁQUINA CREARÁ TU ADIVINANZA!")
 
-# CUADROS DE TEXTO
 objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
 funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
 
-# FILA DE BOTONES
 col1, col2 = st.columns([2, 1])
-
 with col1:
     btn_crear = st.button("✏️ CREA TU ADIVINANZA")
-
 with col2:
     st.button("🗑️ BORRAR", on_click=borrar_todo)
 
@@ -125,31 +108,27 @@ if btn_crear:
             with st.spinner('🤖 ANALIZANDO...'):
                 try:
                     consigna = (
-                        f"ACTÚA COMO UN MAESTRO DE PRIMARIA. EL NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
-                        f"SI LA FUNCIÓN NO TIENE SENTIDO CON EL OBJETO, RESPONDE EXACTAMENTE: "
-                        f"'¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
-                        f"SI NO SE ENTIENDE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
-                        f"SI TODO ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
-                        f"TODO EN MAYÚSCULAS Y TERMINA CON '¿QUÉ SOY?'. RESPONDE SOLO EL TEXTO SOLICITADO."
+                        f"ERES UN MAESTRO DE PRIMER GRADO. UN NIÑO DICE QUE UN/A '{objeto}' SIRVE PARA '{funcion}'. "
+                        f"SI NO TIENE SENTIDO, RESPONDE: '¿ESTÁS SEGURO QUE ESA ES LA FUNCIÓN? PIENSA UN POCO MÁS ¿PARA QUÉ SE USA EL/LA {objeto}?' "
+                        f"SI ES ILEGIBLE, RESPONDE: '¡UPS! NO ENTENDÍ, PUEDES ESCRIBIR DE NUEVO.' "
+                        f"SI ESTÁ BIEN, CREA UNA ADIVINANZA CORTA DE 4 VERSOS (FUNCIÓN PRIMERO, FORMA DESPUÉS). "
+                        f"TODO EN MAYÚSCULAS Y TERMINA CON '¿QUÉ SOY?'."
                     )
                     
                     resultado = model.generate_content(consigna)
                     respuesta = resultado.text.upper().strip()
                     
-                    # Verificamos si es adivinanza o mensaje de error
                     if "¿QUÉ SOY?" in respuesta or "¿QUE SOY?" in respuesta:
                         st.markdown('<p class="adivinanza-subtitulo">📝 TU ADIVINANZA:</p>', unsafe_allow_html=True)
                         st.code(respuesta, language=None)
                     else:
                         st.markdown(f'<p class="mensaje-robot">🤖 {respuesta}</p>', unsafe_allow_html=True)
-                    
                 except Exception as e:
-                    # Si el error es por cuota, damos un mensaje más amable
                     if "429" in str(e):
-                        st.error("🤖 EL ROBOT ESTÁ CANSADO. POR FAVOR, ESPERA UN MINUTO Y REINTENTA.")
+                        st.error("🤖 CUPO DIARIO AGOTADO. MAÑANA TENDREMOS MÁS.")
                     else:
-                        st.error(f"ERROR: {e}")
+                        st.error(f"HUBO UN PROBLEMA: {e}")
         else:
-            st.error("NO SE ENCONTRÓ EL MOTOR DE IA.")
+            st.error("NO SE ENCONTRÓ UN MOTOR DISPONIBLE.")
     else:
         st.warning("COMPLETA LOS DOS CUADROS.")
