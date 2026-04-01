@@ -133,6 +133,7 @@ if btn_crear:
                     
                     resultado = model.generate_content(consigna)
                     respuesta = resultado.text.upper()
+                     font-size: 28px !important;
                     
                     st.markdown("---")
                     
