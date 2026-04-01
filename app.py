@@ -143,7 +143,7 @@ if btn_crear:
                         st.code(respuesta, language=None)
                     else:
                         # SI ES UN MENSAJE DE VALIDACIÓN (TEXTO NEGRO)
-                        st.markdown(f"**🤖 EL ROBOT DICE:** {respuesta}")
+                        st.markdown(f"{respuesta}")
                     
                 except Exception as e:
                     st.error(f"HUBO UN ERROR TÉCNICO: {e}")
