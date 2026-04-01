@@ -4,16 +4,13 @@ from google.oauth2.service_account import Credentials
 import gspread
 from datetime import datetime
 
-# 1. CONFIGURACIÓN DE PÁGINA (Pestaña del navegador)
+# 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- ESTILO CSS COMPACTO Y SIN LÍNEAS (DISEÑO ORIGINAL) ---
+# --- ESTILO CSS COMPACTO ---
 st.markdown(f"""
     <style>
-    .block-container {{
-        padding-top: 1rem !important;
-        padding-bottom: 0rem !important;
-    }}
+    .block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; }}
     .stApp, div[data-testid="stMarkdownContainer"] p, .stWidgetLabel, .stTextInput input, p {{
         color: #000000 !important;
         font-family: 'Source Sans Pro', sans-serif;
@@ -66,13 +63,11 @@ def guardar_en_excel(nombre, obj, func, adv):
         creds = Credentials.from_service_account_info(creds_info, scopes=scope)
         client = gspread.authorize(creds)
         
-        # === REEMPLAZA ESTO CON TU ID DE EXCEL ===
+        # === TU ID DE EXCEL AQUÍ ===
         ID_PLANILLA = "TU_ID_DE_GOOGLE_SHEET_AQUÍ" 
         sheet = client.open_by_key(ID_PLANILLA).sheet1
         
-        # AQUÍ ESTÁ EL CAMBIO: Registro de día, mes, año, HORA y MINUTO
         fecha_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        
         sheet.append_row([fecha_hora, nombre.upper(), obj.upper(), func.upper(), adv.upper()])
     except Exception as e:
         print(f"Error al guardar: {e}")
@@ -80,31 +75,19 @@ def guardar_en_excel(nombre, obj, func, adv):
 # 3. CONFIGURACIÓN IA
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-else:
-    st.error("⚠️ FALTA API KEY EN SECRETS.")
-
-@st.cache_resource
-def configurar_modelo():
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(m.name)
-        return None
-    except: return None
-
-model = configurar_modelo()
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def borrar_todo():
     st.session_state["nombre"] = ""
     st.session_state["objeto"] = ""
     st.session_state["funcion"] = ""
 
-# 4. INTERFAZ (ORDEN COMPACTO)
+# 4. INTERFAZ
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("¿CUÁL ES TU NOMBRE?", key="nombre", autocomplete="off")
-objeto = st.text_input("1. ¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
-funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
+objeto = st.text_input("¿QUÉ PRODUCTO ES?", key="objeto", autocomplete="off")
+funcion = st.text_input("¿PARA QUÉ SIRVE?", key="funcion", autocomplete="off")
 
 col1, col2 = st.columns([2, 1])
 with col1:
@@ -112,29 +95,12 @@ with col1:
 with col2:
     st.button("🗑️ BORRAR", on_click=borrar_todo)
 
-# 5. LÓGICA DE CONTROL (EL CONCEPTO DE TECNOLOGÍA)
+# 5. LÓGICA DE CONTROL (LA MÁQUINA DE ADIVINANZAS)
 if btn_crear:
     if nombre and objeto and funcion:
-        if model:
-            with st.spinner('🤖 ANALIZANDO...'):
-                try:
-                    consigna = (
-                        f"ACTÚA COMO UN MAESTRO DE TECNOLOGÍA. ALUMNO: {nombre}. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
-                        f"SI LA FUNCIÓN ES NATURAL (COMO NADAR, CRECER SOLO, O ALGO QUE NO REQUIERE TRABAJO HUMANO), RESPONDE EXACTAMENTE: "
-                        f"¿ESTÁS SEGURO DE QUE ES UN PRODUCTO TECNOLÓGICO? VUELVE A INTENTARLO. "
-                        f"CASO CONTRARIO, CREA UNA ADIVINANZA MUY BREVE (4 VERSOS), MAYÚSCULAS, CON TILDES. "
-                        f"PROHIBIDO SALUDAR. TERMINA CON: ¿QUÉ SOY?"
-                    )
-                    resultado = model.generate_content(consigna)
-                    respuesta = resultado.text.upper().strip()
-                    
-                    if "¿QUÉ SOY?" in respuesta:
-                        st.code(respuesta, language=None)
-                        guardar_en_excel(nombre, objeto, funcion, respuesta)
-                    else:
-                        st.markdown(f'<p style="font-size:20px; font-weight:bold;">🤖 {respuesta}</p>', unsafe_allow_html=True)
-                except Exception as e:
-                    st.error("INTENTA DE NUEVO.")
-        else: st.error("MOTOR NO ENCONTRADO.")
-    else:
-        st.warning("POR FAVOR, COMPLETA TODOS LOS CAMPOS.")
+        with st.spinner('🤖 CREANDO...'):
+            try:
+                # CONSIGNA REFORZADA PARA EVITAR CHARLAS
+                consigna = (
+                    f"CONTEXTO: ALUMNO DE 6 AÑOS. OBJETO: {objeto}. FUNCIÓN: {funcion}. "
+                    f"TAREA: EVALUAR SI ES PRODUCTO TECNOLÓGICO O NATURAL. "
