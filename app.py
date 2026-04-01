@@ -108,10 +108,10 @@ funcion = st.text_input("2. ¿PARA QUÉ SIRVE?", key="funcion", autocomplete="of
 col1, col2 = st.columns(2)
 
 with col1:
-    btn_crear = st.button("✨ CREA TU ADIVINANZA")
+    btn_crear = st.button("✏️CREA TU ADIVINANZA")
 
 with col2:
-    st.button("🗑️ BORRAR TODO", on_click=borrar_todo)
+    st.button("🗑️BORRAR TODO", on_click=borrar_todo)
 
 # 6. LÓGICA DE GENERACIÓN CON VALIDACIÓN Y NUEVO DISEÑO
 if btn_crear:
