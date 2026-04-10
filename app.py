@@ -10,7 +10,7 @@ st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 # --- DISEÑO  ---
 st.markdown(f"""
     <style>
-    .block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; }}
+    .block-container {{ padding-top: 3rem !important; padding-bottom: 0rem !important; }}
     .stApp, div[data-testid="stMarkdownContainer"] p, .stWidgetLabel, .stTextInput input, p {{
         color: #000000 !important;
         font-family: 'Source Sans Pro', sans-serif;
