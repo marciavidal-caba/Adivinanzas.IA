@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
-# --- DISEÑO ESTÉTICO ---
+# --- DISEÑO  ---
 st.markdown(f"""
     <style>
     .block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; }}
