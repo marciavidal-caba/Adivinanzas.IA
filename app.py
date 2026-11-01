@@ -90,7 +90,7 @@ def borrar_todo():
 st.markdown('<p class="titulo-machine">🤖ADIVINABOT: TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("ESCRIBE TU NOMBRE", key="nombre", autocomplete="off")
-objeto = st.text_input("PIENSA UN TRANSPORTE Y ESCRIBELO", key="objeto", autocomplete="off")
+objeto = st.text_input("PIENSA UN TRANSPORTE Y ESCRÍBELO", key="objeto", autocomplete="off")
 funcion = st.text_input("¿CUÁL ES LA FUNCIÓN DEL PRODUCTO?¿DE QUÉ MATERIAL ESTÁ HECHO? ¿QUÉ ENERGÍA USA?", key="funcion", autocomplete="off")
 
 col1, col2 = st.columns([2, 1])
