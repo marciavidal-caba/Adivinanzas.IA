@@ -87,7 +87,7 @@ def borrar_todo():
     st.session_state["funcion"] = ""
 
 # 4. INTERFAZ
-st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
+st.markdown('<p class="titulo-machine">🤖ADIVINABOT: TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("ESCRIBE TU NOMBRE", key="nombre", autocomplete="off")
 objeto = st.text_input("PIENSA UN TRANSPORTE Y ESCRIBELO", key="objeto", autocomplete="off")
