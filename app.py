@@ -5,7 +5,7 @@ import gspread
 from datetime import datetime, timedelta
 
 # 1. CONFIGURACIÓN DE PÁGINA
-st.set_page_config(page_title="TECNO ADIVINANZAS MACHINE", page_icon="🤖")
+st.set_page_config(page_title="ADIVINABOT:TECNO ADIVINANZAS MACHINE", page_icon="🤖")
 
 # --- DISEÑO  ---
 st.markdown(f"""
@@ -90,8 +90,8 @@ def borrar_todo():
 st.markdown('<p class="titulo-machine">🤖 TECNO ADIVINANZAS MACHINE ✨</p>', unsafe_allow_html=True)
 
 nombre = st.text_input("ESCRIBE TU NOMBRE", key="nombre", autocomplete="off")
-objeto = st.text_input("PIENSA UN PRODUCTO TECNOLÓGICO Y ESCRIBELO", key="objeto", autocomplete="off")
-funcion = st.text_input("¿CUÁL ES LA FUNCIÓN DEL PRODUCTO?", key="funcion", autocomplete="off")
+objeto = st.text_input("PIENSA UN TRANSPORTE Y ESCRIBELO", key="objeto", autocomplete="off")
+funcion = st.text_input("¿CUÁL ES LA FUNCIÓN DEL PRODUCTO?¿DE QUÉ MATERIAL ESTÁ HECHO? ¿QUÉ ENERGÍA USA?", key="funcion", autocomplete="off")
 
 col1, col2 = st.columns([2, 1])
 with col1:
